@@ -40,11 +40,6 @@ object HListOps extends HListAux {
 
   /**
    * joins to hlists on two specific indeces.
-   * 
-   * Currently the parameter n1 is unused and the first list is left
-   * unmodified. This should change in the future. If the two joined
-   * columns have the wrong type, then this should result in an
-   * compile error.
    */
   def join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
     (eq : Eq[T1, T2], l1 : L1, l2 : L2, n1 : N1, n2 : N2)
