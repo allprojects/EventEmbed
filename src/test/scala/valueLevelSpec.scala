@@ -7,7 +7,12 @@ class ValueLevelSpec extends FlatSpec with Matchers {
   val l2 = List("Int", "String", "String")
   val l3 = List("String", "String")
 
+  // place holder, the type level functions would have a type of (Int, Int) => Boolean
+  val intEq : (String, String) => Boolean = (_, _) => true
+
+  val strEq : (String, String) => Boolean = (_, _) => true
+
   "A Join of two tuples" should "create a new tuple with combined columns" in {
-    join(l1, l2, 0, 0) should be (l1 ++ l3)
+    join(intEq, l1, l2, 0, 0) should be (Some (l1 ++ l3))
   }
 }
