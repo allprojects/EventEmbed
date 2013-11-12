@@ -5,6 +5,18 @@ import shapeless.NatMacros._
 
 object HListOps {
 
+  sealed trait Ordering
+  case object LT extends Ordering
+  case object EQ extends Ordering
+  case object GT extends Ordering
+
+  type Cmp[T1, T2] = (T1, T2) => Ordering
+
+  trait DepFn3[T1, T2, T3] {
+    type Out
+    def apply(t1 : T1, t2 : T2, t3 : T3) : Out
+  }
+
   /**
    * removes an element with a specific index from an HList.
    */
@@ -37,29 +49,36 @@ object HListOps {
    * columns have the wrong type, then this should result in an
    * compile error.
    */
-  def join[L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
-    (l1 : L1, l2 : L2, n1 : N1, n2 : N2)
-    (implicit join : Join[L1, L2, N1, N2]) : join.Out = join(l1, l2)
+  def join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
+    (cmp : Cmp[T1, T2], l1 : L1, l2 : L2, n1 : N1, n2 : N2)
+    (implicit join : Join[T1, T2, L1, L2, N1, N2]) : join.Out = join(cmp, l1, l2)
 
-  trait Join[L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat] extends DepFn2[L1, L2] { type Out <: HList }
+  trait Join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat] extends DepFn3[Cmp[T1, T2], L1, L2] { type Out <: Option[HList] }
 
   object Join {
-    def apply[L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
-        (implicit join : Join[L1, L2, N1, N2]) : Aux[L1, L2, N1, N2, join.Out] = join
+    def apply[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
+        (implicit join : Join[T1, T2, L1, L2, N1, N2]) : Aux[T1, T2, L1, L2, N1, N2, join.Out] = join
 
-    type Aux[L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat, Out0 <: HList] =
-      Join[L1, L2, N1, N2] { type Out = Out0 }
+    type Aux[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat, Out0 <: Option[HList]] =
+      Join[T1, T2, L1, L2, N1, N2] { type Out = Out0 }
 
-    implicit def hlistJoin[L1 <: HList, L2 <: HList, L3 <: HList, N1 <: Nat, N2 <: Nat]
+    implicit def hlistJoin[T1, T2, L1 <: HList, L2 <: HList, L3 <: HList, N1 <: Nat, N2 <: Nat]
       (implicit removeIndex : RemoveIndex.Aux[L2, N2, L3],
-                prepend     : Prepend[L1, L3]) =
-        new Join[L1, L2, N1, N2] {
-            type Out = prepend.Out
-            def apply(l1 : L1, l2 : L2) = prepend(l1, removeIndex(l2))
+                prepend     : Prepend[L1, L3],
+                at1         : At.Aux[L1, N1, T1],
+                at2         : At.Aux[L2, N2, T2]) =
+        new Join[T1, T2, L1, L2, N1, N2] {
+            type Out = Option[prepend.Out]
+            def apply(cmp : Cmp[T1, T2], l1 : L1, l2 : L2) =
+              if (cmp(at1(l1), at2(l2)) == EQ)
+                Some(prepend(l1, removeIndex(l2)))
+              else
+                None
         }
   }
 }
 
+/*
 object TupleOps {
 
   def join[T1, T2, N1 <: Nat, N2 <: Nat]
@@ -85,3 +104,5 @@ object TupleOps {
         }
   }
 }
+
+ */
