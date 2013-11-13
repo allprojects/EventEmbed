@@ -6,12 +6,17 @@ import org.scalatest._
 class TypeLevelSpec extends FunSpec with Matchers {
 
   val l1 = 1 :: 2 :: "three" :: HNil
+  val l11 = 1 :: 2 :: "three" :: HNil
   val l2 = 2 :: "three" :: HNil
   val l3 = 1 :: "three" :: HNil
   val l4 = 1 :: 2 :: HNil;
+ val n0 = Nat(0)
 
-  val intEq : Eq[Int, Int] = Ordering[Int].eq(_ : Int, _ : Int)
-  val strEq : Eq[String, String] = Ordering[String].eq(_ : String, _ : String)
+  val intEq: Eq[Int, Int] = (x1: Int, x2: Int) => {
+    x1 == x2
+  }
+
+  val strEq: Eq[String, String] = _ == _ //Ordering[String].eq(_ : String, _ : String)
 
   describe("An Element of an HList") {
     it("can be removed") {
@@ -20,14 +25,15 @@ class TypeLevelSpec extends FunSpec with Matchers {
       assert(removeIndex(l1, Nat(0)) == l2)
       assert(removeIndex(l1, Nat(1)) == l3)
       assert(removeIndex(l1, Nat(2)) == l4)
+   //   assert(removeIndex(l1, Nat(0)).at(Nat(0)) == Null)
     }
   }
 
   describe("Two HLists") {
     it("can be joined on two different indices") {
-      assert(join(intEq, l1, l1, Nat(0), Nat(0)) == Some (l1 ++ l2))
+      assert(join(intEq, l1, l11, Nat(0), Nat(0)) == Some(l1 ++ l2))
       assert(join(intEq, l1, l1, Nat(0), Nat(1)) == None)
-      assert(join(strEq, l1, l1, Nat(2), Nat(2)) == Some (l1 ++ l4))
+      assert(join(strEq, l1, l1, Nat(2), Nat(2)) == Some(l1 ++ l4))
     }
   }
 
@@ -35,13 +41,14 @@ class TypeLevelSpec extends FunSpec with Matchers {
   val t2 = (2, "three")
   val t3 = (1, "three")
   val t4 = (1, 2)
+  
 
-  describe("Two Tuples") {
-    it("can be joined on two different indices") {
-      import shapeless.syntax.std.tuple._
-      TupleOps.join(intEq, t1, t1, Nat(0), Nat(0)) should be (Some (t1 ++ t2))
-      TupleOps.join(intEq, t1, t1, Nat(0), Nat(1)) should be (None)
-      TupleOps.join(strEq, t1, t1, Nat(0), Nat(2)) should be (Some (t1 ++ t4))
+    describe("Two Tuples") {
+      it("can be joined on two different indices") {
+        import shapeless.syntax.std.tuple._
+        TupleOps.join(intEq, t1, t1, Nat(0), Nat(0)) should be (Some (t1 ++ t2))
+        TupleOps.join(intEq, t1, t1, Nat(0), Nat(1)) should be (None)
+       TupleOps.join(strEq, t1, t1, Nat(2), Nat(2)) should be (Some (t1 ++ t4))
+      }
     }
-  }
 }

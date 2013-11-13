@@ -72,19 +72,19 @@ object HListOps extends HListAux {
 
 object TupleOps extends HListAux {
 
-  def join[T1, T2, L1, L2, N1 <: Nat, N2 <: Nat]
-    (eq : Eq[T1, T2], l1 : L1, l2 : L2, n1 : N1, n2 : N2)
-    (implicit join : Join[T1, T2, L1, L2, N1, N2]) : join.Out = join(eq, l1, l2)
+  def join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat]
+    (eq : (T1,T2) => Boolean, l1 : TUP1, l2 : TUP2, n1 : N1, n2 : N2)
+    (implicit join : Join[T1, T2, TUP1, TUP2, N1, N2]) : join.Out = join(eq, l1, l2)
 
-  trait Join[T1, T2, L1, L2, N1 <: Nat, N2 <: Nat] extends DepFn3[Eq[T1, T2], L1, L2]
+  trait Join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat] extends DepFn3[Eq[T1, T2], TUP1, TUP2]
 
   object Join {
-    def apply[T1, T2, L1, L2, N1 <: Nat, N2 <: Nat]
-        (implicit join : Join[T1, T2, L1, L2, N1, N2]) : Aux[T1, T2, L1, L2, N1, N2, join.Out] = join
+    def apply[T1, T2, TUP1<: Product, TUP2<: Product, N1 <: Nat, N2 <: Nat]
+        (implicit join : Join[T1, T2, TUP1, TUP2, N1, N2]) : Aux[T1, T2, TUP1, TUP2, N1, N2, join.Out] = join
 
-    type Aux[T1, T2, L1, L2, N1 <: Nat, N2 <: Nat, Out0] = Join[T1, T2, L1, L2, N1, N2] { type Out = Out0 }
+    type Aux[T1, T2, TUP1<: Product, TUP2<: Product, N1 <: Nat, N2 <: Nat, Out0] = Join[T1, T2, TUP1, TUP2, N1, N2] { type Out = Out0 }
 
-    implicit def hlistJoin[T1, T2, TUP1, TUP2, L1 <: HList, L2 <: HList, L3 <: HList, N1 <: Nat, N2 <: Nat]
+    implicit def hlistJoin[T1, T2, TUP1<: Product, TUP2<: Product, L1 <: HList, L2 <: HList, L3 <: HList, N1 <: Nat, N2 <: Nat]
       (implicit gen1   : Generic.Aux[TUP1, L1],
                 gen2   : Generic.Aux[TUP2, L2],
                 join   : HListOps.Join.Aux[T1, T2, L1, L2, N1, N2, Option[L3]],
