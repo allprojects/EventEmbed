@@ -73,7 +73,7 @@ object HListOps extends HListAux {
 object TupleOps extends HListAux {
 
   def join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat]
-    (eq : (T1,T2) => Boolean, l1 : TUP1, l2 : TUP2, n1 : N1, n2 : N2)
+    (eq : (T1, T2) => Boolean, l1 : TUP1, l2 : TUP2, n1 : N1, n2 : N2)
     (implicit join : Join[T1, T2, TUP1, TUP2, N1, N2]) : join.Out = join(eq, l1, l2)
 
   trait Join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat] extends DepFn3[Eq[T1, T2], TUP1, TUP2]
@@ -91,13 +91,7 @@ object TupleOps extends HListAux {
                 tupler : Tupler[L3]) =
         new Join[T1, T2, TUP1, TUP2, N1, N2] {
             type Out = Option[tupler.Out]
-
-            // cannot use 'join(...).map(tupler.apply)' because methods
-            // with dependent types cannot be converted to functions, yeay
-            def apply(eq : Eq[T1, T2], t1 : TUP1, t2 : TUP2) = join(eq, gen1.to(t1), gen2.to(t2)) match {
-              case Some(s) => Some(tupler(s))
-              case None    => None
-            }
+            def apply(eq: Eq[T1, T2], t1: TUP1, t2: TUP2) = join(eq, gen1.to(t1), gen2.to(t2)).map(tupler(_))
         }
   }
 }
