@@ -12,11 +12,9 @@ class TypeLevelSpec extends FunSpec with Matchers {
   val l4 = 1 :: 2 :: HNil;
  val n0 = Nat(0)
 
-  val intEq: Eq[Int, Int] = (x1: Int, x2: Int) => {
-    x1 == x2
-  }
+  val intEq = (x : Int, y  : Int) => x==y ;
 
-  val strEq: Eq[String, String] = _ == _ //Ordering[String].eq(_ : String, _ : String)
+  val strEq = (x : String, y : String) =>  x == y 
 
   describe("An Element of an HList") {
     it("can be removed") {
@@ -25,7 +23,7 @@ class TypeLevelSpec extends FunSpec with Matchers {
       assert(removeIndex(l1, Nat(0)) == l2)
       assert(removeIndex(l1, Nat(1)) == l3)
       assert(removeIndex(l1, Nat(2)) == l4)
-   //   assert(removeIndex(l1, Nat(0)).at(Nat(0)) == Null)
+      assert(removeIndex(l1, Nat(0)).at(Nat(0)) == 2)
     }
   }
 
