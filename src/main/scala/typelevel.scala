@@ -8,9 +8,10 @@ trait HListAux {
     type Out
     def apply(t1 : T1, t2 : T2, t3 : T3) : Out
   }
-
-  type Eq[T1, T2] = (T1, T2) => Boolean
+  //isnt working no type inference
+  //type Eq[T1,T2] = (T1,T2) => Boolean
 }
+
 
 object HListOps extends HListAux {
 
@@ -42,10 +43,10 @@ object HListOps extends HListAux {
    * joins to hlists on two specific indeces.
    */
   def join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
-    (eq : Eq[T1, T2], l1 : L1, l2 : L2, n1 : N1, n2 : N2)
+    (eq : (T1, T2) => Boolean, l1 : L1, l2 : L2, n1 : N1, n2 : N2)
     (implicit join : Join[T1, T2, L1, L2, N1, N2]) : join.Out = join(eq, l1, l2)
 
-  trait Join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat] extends DepFn3[Eq[T1, T2], L1, L2] { type Out <: Option[HList] }
+  trait Join[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat] extends DepFn3[ (T1, T2) => Boolean, L1, L2] { type Out <: Option[HList] }
 
   object Join {
     def apply[T1, T2, L1 <: HList, L2 <: HList, N1 <: Nat, N2 <: Nat]
@@ -61,7 +62,7 @@ object HListOps extends HListAux {
                 at2         : At.Aux[L2, N2, T2]) =
         new Join[T1, T2, L1, L2, N1, N2] {
             type Out = Option[prepend.Out]
-            def apply(eq : Eq[T1, T2], l1 : L1, l2 : L2) =
+            def apply(eq :  (T1, T2) => Boolean, l1 : L1, l2 : L2) =
               if (eq(at1(l1), at2(l2)))
                 Some(prepend(l1, removeIndex(l2)))
               else
@@ -76,7 +77,7 @@ object TupleOps extends HListAux {
     (eq : (T1,T2) => Boolean, l1 : TUP1, l2 : TUP2, n1 : N1, n2 : N2)
     (implicit join : Join[T1, T2, TUP1, TUP2, N1, N2]) : join.Out = join(eq, l1, l2)
 
-  trait Join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat] extends DepFn3[Eq[T1, T2], TUP1, TUP2]
+  trait Join[T1, T2, TUP1 <: Product, TUP2 <: Product, N1 <: Nat, N2 <: Nat] extends DepFn3[ (T1, T2) => Boolean, TUP1, TUP2]
 
   object Join {
     def apply[T1, T2, TUP1<: Product, TUP2<: Product, N1 <: Nat, N2 <: Nat]
@@ -94,7 +95,7 @@ object TupleOps extends HListAux {
 
             // cannot use 'join(...).map(tupler.apply)' because methods
             // with dependent types cannot be converted to functions, yeay
-            def apply(eq : Eq[T1, T2], t1 : TUP1, t2 : TUP2) = join(eq, gen1.to(t1), gen2.to(t2)) match {
+            def apply(eq :  (T1, T2) => Boolean, t1 : TUP1, t2 : TUP2) = join(eq, gen1.to(t1), gen2.to(t2)) match {
               case Some(s) => Some(tupler(s))
               case None    => None
             }
