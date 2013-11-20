@@ -15,15 +15,10 @@ object HListOps {
   /**
    * removes an element with a specific index from an HList.
    */
-  def removeIndex[L <: HList, N <: Nat](l : L, n : N)
-    (implicit removeIndex : RemoveIndex[L, n.N]) : removeIndex.Out = removeIndex(l)
 
-  trait RemoveIndex[L <: HList, N <: Nat] extends DepFn1[L] { type Out <: HList }
+  trait RemoveIndex[L <: HList, N <: Nat] { type Out <: HList }
 
   object RemoveIndex {
-
-    def apply[L <: HList, N <: Nat](implicit remove : RemoveIndex[L, N]) : Aux[L, N, remove.Out] = remove
-
     type Aux[L <: HList, N <: Nat, Out0 <: HList] = RemoveIndex[L, N] { type Out = Out0 }
 
     implicit def hlistRemoveIndex[L1 <: HList, L2 <: HList, L3 <: HList, N <: Nat]
@@ -32,7 +27,6 @@ object HListOps {
                 prepend : Prepend[L2, L3]) =
       new RemoveIndex[L1, N] {
         type Out = prepend.Out
-        def apply(l : L1) : Out = prepend(take(l), drop(l))
       }
   }
   /**
