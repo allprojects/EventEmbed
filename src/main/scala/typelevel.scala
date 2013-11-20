@@ -56,7 +56,7 @@ object HListOps {
 }
 
 object TupleOps {
-  trait Join[CMP <: Compare, TUP1 <: Product, TUP2 <: Product]
+  trait Join[CMP <: Compare, TUP1 <: Product, TUP2 <: Product] { type Out }
 
   object Join {
     type Aux[CMP <: Compare, TUP1<: Product, TUP2<: Product, Out0] =
