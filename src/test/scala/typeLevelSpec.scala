@@ -1,52 +1,50 @@
-import HListOps._
+package tuplejoin
+
 import shapeless._
-import shapeless.NatMacros._
-import org.scalatest._
+import nat._
+import shapeless.test.illTyped
 
-class TypeLevelSpec extends FunSpec with Matchers {
+class TypeLevelSpec {
 
-  val l1 = 1 :: 2 :: "three" :: HNil
-  val l11 = 1 :: 2 :: "three" :: HNil
-  val l2 = 2 :: "three" :: HNil
-  val l3 = 1 :: "three" :: HNil
-  val l4 = 1 :: 2 :: HNil;
- val n0 = Nat(0)
+  type cmp1 = Compare {type arg1 = _0; type arg2 = _0}
+  type cmp2 = Compare {type arg1 = _0; type arg2 = _2}
+  type cmp3 = Compare {type arg1 = _9; type arg2 = _9}
 
-  val intEq = (x : Int, y  : Int) => x==y ;
+  class HListOpsSpec {
+    import tuplejoin.HListOps._
 
-  val strEq = (x : String, y : String) =>  x == y 
+    type l1 = ::[Int, ::[Int, ::[String, HNil]]]
+    type l2 = ::[Int, ::[String, HNil]]
+    type l3 = ::[Int, ::[Int, HNil]]
+    type l4 = ::[Int, ::[Int, ::[String, ::[Int, ::[String, HNil]]]]]
+    type l5 = ::[Int, ::[Int, ::[String, ::[Int, HNil]]]]
 
-  describe("An Element of an HList") {
-    it("can be removed") {
+    implicitly[RemoveIndex.Aux[l1, _0, l2]]
+    implicitly[RemoveIndex.Aux[l1, _1, l2]]
+    implicitly[RemoveIndex.Aux[l1, _2, l3]]
+    illTyped("implicitly[RemoveIndex.Aux[l1, _20, l4]]")
+    illTyped("implicitly[RemoveIndex.Aux[l1, _2, l1]]")
 
-      // 'should be' for some strange reason does not work
-      assert(removeIndex(l1, Nat(0)) == l2)
-      assert(removeIndex(l1, Nat(1)) == l3)
-      assert(removeIndex(l1, Nat(2)) == l4)
-      assert(removeIndex(l1, Nat(0)).at(Nat(0)) == 2)
-    }
+    implicitly[Join.Aux[cmp1, l1, l1, l4]]
+    implicitly[Join.Aux[cmp1, l1, l3, l5]]
+    illTyped("implicitly[Join[cmp2, l1, l1]]")
+    illTyped("implicitly[Join.Aux[cmp1, l2, l2, l3]]")
+    illTyped("implicitly[Join[cmp3, l1, l1]]")
   }
 
-  describe("Two HLists") {
-    it("can be joined on two different indices") {
-      assert(join(intEq, l1, l11, Nat(0), Nat(0)) == Some(l1 ++ l2))
-      assert(join(intEq, l1, l1, Nat(0), Nat(1)) == None)
-      assert(join(strEq, l1, l1, Nat(2), Nat(2)) == Some(l1 ++ l4))
-    }
+  object TupleOpsSpec {
+    import tuplejoin.TupleOps._
+
+    type t1 = (Int, Int, String)
+    type t2 = (Int, String)
+    type t3 = (Int, Int)
+    type t4 = (Int, Int, String, Int, String)
+    type t5 = (Int, Int, String, Int)
+
+    implicitly[Join.Aux[cmp1, t1, t1, t4]]
+    implicitly[Join.Aux[cmp1, t1, t3, t5]]
+    illTyped("implicitly[Join[cmp2, t1, t1]]")
+    illTyped("implicitly[Join.Aux[cmp1, t2, t2, t3]]")
+    illTyped("implicitly[Join[cmp3, t1, t1]]")
   }
-
-  val t1 = (1, 2, "three")
-  val t2 = (2, "three")
-  val t3 = (1, "three")
-  val t4 = (1, 2)
-  
-
-    describe("Two Tuples") {
-      it("can be joined on two different indices") {
-        import shapeless.syntax.std.tuple._
-        TupleOps.join(intEq, t1, t1, Nat(0), Nat(0)) should be (Some (t1 ++ t2))
-        TupleOps.join(intEq, t1, t1, Nat(0), Nat(1)) should be (None)
-       TupleOps.join(strEq, t1, t1, Nat(2), Nat(2)) should be (Some (t1 ++ t4))
-      }
-    }
 }
