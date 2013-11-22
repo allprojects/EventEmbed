@@ -5,17 +5,16 @@ import shapeless.ops.hlist._
 import shapeless.nat._
 import shapeless.NatMacros._
 
-  trait Compare {
-    type arg1 <: Nat
-    type arg2 <: Nat
-  }
+trait Compare {
+  type arg1 <: Nat
+  type arg2 <: Nat
+}
 
 object HListOps {
 
   /**
    * removes an element with a specific index from an HList.
    */
-
   trait RemoveIndex[L <: HList, N <: Nat] { type Out <: HList }
 
   object RemoveIndex {
