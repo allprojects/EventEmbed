@@ -22,7 +22,7 @@ class TypeLevelSpec {
     implicitly[RemoveIndex.Aux[l1, _0, l2]]
     implicitly[RemoveIndex.Aux[l1, _1, l2]]
     implicitly[RemoveIndex.Aux[l1, _2, l3]]
-    illTyped("implicitly[RemoveIndex.Aux[l1, _20, l4]]")
+    illTyped("implicitly[RemoveIndex[l1, _20]]")
     illTyped("implicitly[RemoveIndex.Aux[l1, _2, l1]]")
 
     implicitly[Join.Aux[cmp1, l1, l1, l4]]
