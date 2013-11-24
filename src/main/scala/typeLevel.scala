@@ -10,9 +10,9 @@ import shapeless.ops.hlist.Drop
 import shapeless.ops.hlist.Prepend
 import shapeless.ops.hlist.Take
 
-trait Compare {
-  type arg1 <: Nat
-  type arg2 <: Nat
+trait Compare[N1 <: Nat, N2 <: Nat] {
+//  type arg1 <: Nat
+//  type arg2 <: Nat
 }
 object HListOps {
   trait Join[L1 <: HList, L2 <: HList, CMP <: HList] {
@@ -25,22 +25,31 @@ object HListOps {
       type Out = prepend.Out;
     }
 
-    implicit def recCase[HeadCMPS <: Compare,L1 <: HList, L2 <: HList, TailCMPs <: HList, T, OutL <: HList](
-    			implicit 	removeIdx	: RemoveIndex.Aux[L2, HeadCMPS#arg2,OutL],
-    						at1			: At.Aux[L1, HeadCMPS#arg1, T],
-    						at2			: At.Aux[L2, HeadCMPS#arg2, T],
+    implicit def recCase[N1 <: Nat, N2 <: Nat,L1 <: HList, L2 <: HList, TailCMPs <: HList, T, OutL <: HList](
+    			implicit 	removeIdx	: RemoveIndex.Aux[L2, N2,OutL],
+    						at1			: At.Aux[L1, N1, T],
+    						at2			: At.Aux[L2, N2, T],
     						join		: Join[L1,OutL,TailCMPs]
     			
-    			) : Aux[L1,L2,HeadCMPS :: TailCMPs,join.Out]= {      
-      new Join[L1, L2, HeadCMPS :: TailCMPs] {
+    			) : Aux[L1,L2,Compare[N1,N2]:: TailCMPs,join.Out]= {      
+      new Join[L1, L2, Compare[N1,N2] :: TailCMPs] {
         type Out = join.Out; 
       }
     }
 
   }
   
-  trait LTEq[A <: Compare, B <: Compare]
-
+//  trait LTEq[A <: Compare, B <: Compare]
+//object LTEq {
+//
+//
+//  type <=[A <: Compare, B <: Compare] = LTEq[A, B]
+//
+//  implicit def ltEq1 = new <=[_0, _0] {}
+//  implicit def ltEq2[B <: Nat] = new <=[_0, Succ[B]] {}
+//  implicit def ltEq3[A <: Nat, B <: Nat](implicit lt : A <= B) =
+//    new <=[Succ[A], Succ[B]] {}
+//}
   /**
    * removes an element with a specific index from an HList.
    */

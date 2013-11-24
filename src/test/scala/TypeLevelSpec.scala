@@ -7,11 +7,9 @@ import shapeless.ops.hlist._
 
 class TypeLevelSpec {
 
-  type cmp1 = Compare {type arg1 = _0; type arg2 = _0}
-  type cmp2 = Compare {type arg1 = _2; type arg2 = _1}
-  type cmp3 = Compare {type arg1 = _9; type arg2 = _9}
-  type cmp4 = Compare {type arg1 = _2; type arg2 = _2}
-  type cmps = cmp4 :: cmp1 :: HNil
+  type cmp1 = Compare[_0, _0]
+  type cmp2 = Compare[_2,_1]
+  type cmps = cmp2 :: cmp1 :: HNil
 
   class HListOpsSpec {
     import HListOps._
@@ -42,12 +40,12 @@ class TypeLevelSpec {
     		
     //implicitly[RemoveIndex.Aux[l6, _1, l2]]
     implicitly[Join.Aux[l3, l3, HNil,l7]]	
-    implicitly[RemoveIndex.Aux[h2,cmp1#arg2,h1]]
-    implicitly[At.Aux[h1,cmp1#arg1,Int]]
-    implicitly[At.Aux[h2,cmp1#arg2,Int]]
+    implicitly[RemoveIndex.Aux[h2,_0,h1]]
+    implicitly[At.Aux[h1,_0,Int]]
+    implicitly[At.Aux[h2,_0,Int]]
     implicitly[Join[h1,h1,HNil]]
     
-    val t : Join.Aux[h1,h2, cmp1 :: HNil,h2] = Join.recCase[cmp1,h1,h2,HNil, Int, h1]
+    val t : Join.Aux[h1,h2, cmp1 :: HNil,h2] = Join.recCase[_0,_0,h1,h2,HNil, Int, h1]
      
     implicitly[Join.Aux[h1,h1,HNil ,h3]]
     implicitly[Join.Aux[h1,h2, cmp1 :: HNil,h2]]
