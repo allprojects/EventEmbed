@@ -3,18 +3,22 @@ import shapeless._
 import nat._
 import shapeless.test.illTyped
 import shapeless.ops.hlist._
+import org.scalatest.Matchers
+import org.scalatest.FunSpec
 
 
-class TypeLevelSpec {
 
-  type cmp1 = Compare[_0, _0]
-  type cmp2 = Compare[_2,_1]
-  type cmps = cmp2 :: cmp1 :: HNil
+class TypeLevelSpec extends FunSpec with Matchers{
 
-  class HListOpsSpec {
+
+
+  
     import HListOps._
 
-    
+    type cmp1 = Compare[_0, _0]
+    type cmp2 = Compare[_2,_1]
+    type cmp3 = Compare[_2,_2]
+    type cmps = cmp2 :: cmp1 :: HNil
     type l4 = ::[Int, ::[Int, ::[String, ::[Int, ::[String, HNil]]]]]
     type l6 = ::[Int, ::[Int, ::[String, HNil]]]
     
@@ -45,6 +49,7 @@ class TypeLevelSpec {
     implicitly[At.Aux[h2,_0,Int]]
     implicitly[Join[h1,h1,HNil]]
     
+    
     val t : Join.Aux[h1,h2, cmp1 :: HNil,h2] = Join.recCase[_0,_0,h1,h2,HNil, Int, h1]
      
     implicitly[Join.Aux[h1,h1,HNil ,h3]]
@@ -52,5 +57,10 @@ class TypeLevelSpec {
     implicitly[Join.Aux[l1,l2, cmp2 :: cmp1 :: HNil,res]]
     
 
-  }
+    implicitly[LTEqCom[cmp1, cmp2]]
+    implicitly[ComIsSorted[cmp3 :: cmp2 :: cmp1 :: HNil]]
+    //implicitly[ComIsSorted[cmp1 :: cmp2 :: cmp3 :: cmp1 :: HNil]]
+    //implicitly[ComIsSorted[cmp2 :: cmp1 :: cmp2 :: HNil]]
+    illTyped("implicitly[LTEqCom[cmp2,cmp1]]") 
+  
 }

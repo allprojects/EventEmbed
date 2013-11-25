@@ -29,7 +29,8 @@ object HListOps {
     			implicit 	removeIdx	: RemoveIndex.Aux[L2, N2,OutL],
     						at1			: At.Aux[L1, N1, T],
     						at2			: At.Aux[L2, N2, T],
-    						join		: Join[L1,OutL,TailCMPs]
+    						join		: Join[L1,OutL,TailCMPs],
+    						isSorted 	: ComIsSorted[Compare[N1,N2]:: TailCMPs]
     			
     			) : Aux[L1,L2,Compare[N1,N2]:: TailCMPs,join.Out]= {      
       new Join[L1, L2, Compare[N1,N2] :: TailCMPs] {
@@ -39,17 +40,29 @@ object HListOps {
 
   }
   
-//  trait LTEq[A <: Compare, B <: Compare]
-//object LTEq {
-//
-//
-//  type <=[A <: Compare, B <: Compare] = LTEq[A, B]
-//
-//  implicit def ltEq1 = new <=[_0, _0] {}
-//  implicit def ltEq2[B <: Nat] = new <=[_0, Succ[B]] {}
-//  implicit def ltEq3[A <: Nat, B <: Nat](implicit lt : A <= B) =
-//    new <=[Succ[A], Succ[B]] {}
-//}
+  
+ 
+ trait LTEqCom[A <: Compare[_,_], B <: Compare[_,_]]
+ object LTEqCom {
+	 import shapeless.ops.nat._
+	 import shapeless.ops.nat.LTEq._
+	 
+	 type Aux[NA1 <: Nat, NA2 <: Nat, NB1 <: Nat, NB2 <: Nat] = LTEqCom[Compare[NA1,NA2], Compare[NB1,NB2]]; 
+	 implicit def ltEqCom1 = new Aux[_0,_0,_0,_0] {};
+	 implicit def ltEqCom2[NA1 <: Nat, NA2 <: Nat, NB1 <: Nat, NB2 <: Nat](
+		  			implicit 	a : NA1 <= NB1,
+		  						b : NA2 <= NB2) = new LTEqCom[Compare[NA1,NA2], Compare[NB1,NB2]]{};
+
+ }
+ trait ComIsSorted[L <: HList]
+ implicit def hnilNonDecreasing = new ComIsSorted[HNil] {}
+ implicit def hlistNonDecreasing1[Compare] = new ComIsSorted[Compare :: HNil] {}
+ implicit def hlistNonDecreasing2[Com1 <: Compare[_,_], Com2 <: Compare[_,_], T <: HList]
+  (implicit ltEq : LTEqCom[Com1,Com2], ndt : ComIsSorted[Com2 :: T]) =
+    new ComIsSorted[Com2 :: Com1 :: T] {}
+
+ 
+ 
   /**
    * removes an element with a specific index from an HList.
    */
