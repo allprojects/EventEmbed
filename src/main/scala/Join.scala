@@ -1,5 +1,4 @@
 object Main extends App {
-  //possible one
   val e1 = Event((3, "hallo"));
   val e2 = Event((3, "du", "hallo", Some(3)))
   val e3 = Join(e1, e2)(_._1 == _._1)((x, y) => { (x._1, y._2, y._4) })
