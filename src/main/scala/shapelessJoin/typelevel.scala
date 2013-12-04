@@ -1,14 +1,12 @@
-package tuplejoin
+package shapelessJoin
 
 import shapeless._
 import shapeless.ops.hlist._
 import shapeless.nat._
 import shapeless.NatMacros._
+import shapelessJoin.HListOps._
 
-trait Compare {
-  type arg1 <: Nat
-  type arg2 <: Nat
-}
+trait Compare[N1<: Nat, N2 <: Nat]
 
 object HListOps {
 
@@ -31,36 +29,36 @@ object HListOps {
   /**
    * joins to hlists on two specific indeces.
    */
-  trait Join[C <: Compare, L1 <: HList, L2 <: HList]
+  trait Join[N1<: Nat, N2 <: Nat, L1 <: HList, L2 <: HList]
 
   object Join {
-    type Aux[CMP <: Compare, L1 <: HList, L2 <: HList, Out0 <: HList] =
-      Join[CMP, L1, L2] { type Out = Out0 }
+    type Aux[N1<: Nat, N2 <: Nat, L1 <: HList, L2 <: HList, Out0 <: HList] =
+      Join[N1, N2, L1, L2] { type Out = Out0 }
 
-    implicit def hlistJoin[T, CMP <: Compare, L1 <: HList, L2 <: HList, L3 <: HList]
-      (implicit removeIndex : RemoveIndex.Aux[L2, CMP#arg2, L3],
+    implicit def hlistJoin[T, N1<: Nat, N2 <: Nat, L1 <: HList, L2 <: HList, L3 <: HList]
+      (implicit removeIndex : RemoveIndex.Aux[L2, N2, L3],
                 prepend     : Prepend[L1, L3],
-                at1         : At.Aux[L1, CMP#arg1, T],
-                at2         : At.Aux[L2, CMP#arg2, T]) =
-        new Join[CMP, L1, L2] {
+                at1         : At.Aux[L1, N1, T],
+                at2         : At.Aux[L2, N2, T]) =
+        new Join[N1, N2, L1, L2] {
             type Out = prepend.Out
         }
   }
 }
 
 object TupleOps {
-  trait Join[CMP <: Compare, TUP1 <: Product, TUP2 <: Product] { type Out }
+  trait Join[N1<: Nat, N2 <: Nat, TUP1 <: Product, TUP2 <: Product] { type Out }
 
   object Join {
-    type Aux[CMP <: Compare, TUP1<: Product, TUP2<: Product, Out0] =
-      Join[CMP, TUP1, TUP2] { type Out = Out0 }
+    type Aux[N1<: Nat, N2 <: Nat, TUP1<: Product, TUP2<: Product, Out0] =
+      Join[N1,N2, TUP1, TUP2] { type Out = Out0 }
 
-    implicit def hlistJoin[CMP <: Compare, TUP1<: Product, TUP2<: Product, L1 <: HList, L2 <: HList, L3 <: HList]
+    implicit def hlistJoin[N1<: Nat, N2 <: Nat, TUP1<: Product, TUP2<: Product, L1 <: HList, L2 <: HList, L3 <: HList]
       (implicit gen1   : Generic.Aux[TUP1, L1],
                 gen2   : Generic.Aux[TUP2, L2],
-                join   : HListOps.Join.Aux[CMP, L1, L2, L3],
+                join   : HListOps.Join.Aux[N1,N2, L1, L2, L3],
                 tupler : Tupler[L3]) =
-        new Join[CMP, TUP1, TUP2] {
+        new Join[N1,N2, TUP1, TUP2] {
             type Out = tupler.Out
         }
   }
