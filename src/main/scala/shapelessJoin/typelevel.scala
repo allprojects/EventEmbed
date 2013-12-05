@@ -6,7 +6,18 @@ import shapeless.nat._
 import shapeless.NatMacros._
 import shapelessJoin.HListOps._
 
-trait Compare[N1<: Nat, N2 <: Nat]
+import shapeless.ops.nat._
+
+class Compare[N1 <: Nat, N2 <: Nat](n1: N1, n2: N2) (implicit v1 : ToInt[N1], v2 : ToInt[N1]) {
+  def getValue1 = v1
+  def getValue2 = v2
+}
+
+object C{
+    def apply[N1 <: Nat, N2 <: Nat](n1 : N1, n2 : N2) (implicit v1 : ToInt[N1], v2 : ToInt[N2]) = {
+      new Compare[N1, N2](n1, n2)
+    }
+}
 
 object HListOps {
 

@@ -8,6 +8,8 @@ import scala.language.implicitConversions
 import scala.language.postfixOps
 import scala.Predef._
 import org.apache.log4j.{ConsoleAppender, SimpleLayout, Level, Logger}
+import shapeless.nat._
+import shapelessJoin._
 
 class EventsSpec extends FlatSpec with BeforeAndAfter {
   val appender = new ConsoleAppender(new SimpleLayout())
@@ -199,10 +201,10 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
   "An Event Join" should "trigger a reaction when two events which are joined are received and the condition matches" in {
     import EventsLibConversions._
     var testString = ""
-    val e1 = new ImperativeEvent[Int]
+    val e1 = new ImperativeEvent[(Int)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on ((a,b) => a._1 === b._1)
-    val r1 = (e: (Int, Int, String)) => testString += e._3
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on C(_0,_0)
+    val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
     e1(2)
@@ -225,8 +227,8 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[Int]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1 join e2 window time(30 sec) on ((a,b) => a._1 === b._1)
-    val r1 = (e: (Int, Int, String)) => testString += e._3
+    val e3 = e1 join e2 window time(30 sec) on C(_0, _0)
+    val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
     e1(2)
@@ -278,27 +280,28 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     assert(test === 18)
   }
 
+  // WARNING Test changed, due to "strange semantics"!
   "An Event Join using a custom class with simplified syntax" should "trigger a reaction when two events which are joined are received and the condition matches" in {
     import EventsLibConversions._
     var testString = ""
-    val e1 = new ImperativeEvent[IntString]
-    val e2 = new ImperativeEvent[IntString]
-    val e3 = e1 join e2 window time(30 sec) on ((a,b) => a._1 === b._1)
-    val r1 = (e: (IntString, IntString)) => testString += e._2.string
+    val e1 = new ImperativeEvent[(Int, String)]
+    val e2 = new ImperativeEvent[(Int, String)]
+    val e3 = e1 join e2 window time(30 sec) on C(_0,_0)
+    val r1 = (e: (Int, String, String)) => testString += e._3
     e3 += r1
-    e1(new IntString(1, "one"))
-    e1(new IntString(2, "two"))
-    e1(new IntString(4, "four"))
-    e1(new IntString(5, "five"))
-    e1(new IntString(8, "eight"))
-    e2(new IntString(1, "This "))
-    e2(new IntString(2, "is "))
-    e2(new IntString(3, "gibberish"))
-    e2(new IntString(4, "some "))
-    e2(new IntString(5, "secret "))
-    e2(new IntString(7, "gibberish "))
-    e2(new IntString(6, "gibberish "))
-    e2(new IntString(8, "message."))
+    e1((1, "one"))
+    e1((2, "two"))
+    e1((4, "four"))
+    e1((5, "five"))
+    e1((8, "eight"))
+    e2((1, "This "))
+    e2((2, "is "))
+    e2((3, "gibberish"))
+    e2((4, "some "))
+    e2((5, "secret "))
+    e2((7, "gibberish "))
+    e2((6, "gibberish "))
+    e2((8, "message."))
     assert(testString === "This is some secret message.")
   }
 

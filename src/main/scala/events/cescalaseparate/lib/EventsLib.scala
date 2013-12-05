@@ -12,7 +12,8 @@ import shapeless._, ops.tuple._, nat._
 import com.espertech.esper.event.arr.ObjectArrayEventBean
 import shapelessJoin._
 import shapelessJoin.TupleOps._
-
+import shapeless.ops.nat._
+//import shapeless.nat.nat._
 
 object CEPEngine {
   /* Configure the CEP engine */
@@ -337,13 +338,16 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
 
   private val select = mutable.Buffer[String]()
   for (i <- 1 to ev1PropCount) select += ev1.name + ".P" + i + " as " + "P" + i
-  for (i <- 1 to ev2PropCount) select += ev2.name + ".P" + i + " as " + "P" + (ev1PropCount + i)
+  for (i <- 1 to ev2PropCount if i != (condition.getValue2() + 1)) select += ev2.name + ".P" + i + " as " + "P" + (ev1PropCount + i)
 
-//  CEPEngine.createEPL(
-//    "insert istream into " + name +
-//      " select " + select.mkString(", ") +
-//      " from " + ev1.name + ".win:" + window1 + ", " + ev2.name + ".win:" + window2 +
-//      " where " + condition.repr)
+  CEPEngine.createEPL(
+    "insert istream into " + name +
+      " select " + select.mkString(", ") +
+      " from " + ev1.name + ".win:" + window1 + ", " + ev2.name + ".win:" + window2 +
+      " " + esperWhere(condition, ev1.name, ev2.name))
+
+  def esperWhere(condition: Compare[N1, N2], evName1: String, evName2: String)
+    = "where " + evName1 + ".P" + (condition.getValue1() + 1) + " = " + evName2 + ".P" + (condition.getValue2() + 1)
 
   override val statement = CEPEngine.createEPL("select istream * from " + name)
 
@@ -360,7 +364,7 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
         case 0 => react(Unit.asInstanceOf[Z])
         case 1 => react(event.get("P1").asInstanceOf[Z])
         case p =>
-          val properties = for (p <- 1 to p) yield event.get("P" + p)
+          val properties = for (p <- 1 to p if p != (condition.getValue2() + ev1PropCount + 1)) yield event.get("P" + p)
           react(CEPEngine.toTuple(properties.toArray).asInstanceOf[Z])
       }
     }
@@ -372,7 +376,8 @@ class EventNodeJoin2[T <: Product, U <: Product, Z <: Product](ev1: Event[T],
                                                    ev2: Event[U],
                                                    where : (T,U) => Boolean,
                                                    pi : (T,U) => Z) extends EventNode[Z]{
-    
+  override val statement = CEPEngine.createEPL("select istream * from " )//+ name)
+
 }
 
 /*
@@ -471,7 +476,7 @@ case class DSLWindowJoin[T <: Product](event: Event[T], window: DSLWindow) {
    * Join the Event with another Event
    */
   def join[U <: Product](other: DSLWindowJoin[U]) = new DSLWindowJoinOn[T, U](this, other)
-  def join[U <: Product, RES <: Product](other : DSLWindowJoin[U])(where : (T,U) => Boolean)(pi : (T,U) => RES) = 
+  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U])(where : (T,U) => Boolean)(pi : (T,U) => RES) =
       new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
 }
 
@@ -489,6 +494,8 @@ case class TupleEvent[T <: Product](event: Event[T]) {
    * Used for Event Joining
    */
   def join[U <: Product](other: TupleEvent[U]) = new DSLJoinWindow[T, U](event, other.event)
+  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U])(where : (T,U) => Boolean)(pi : (T,U) => RES) =
+      new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
 
   /**
    * Add a window to the Event (e.g. last 30 seconds: "time(30 sec)")
