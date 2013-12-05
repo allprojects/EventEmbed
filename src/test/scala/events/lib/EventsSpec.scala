@@ -10,6 +10,7 @@ import scala.Predef._
 import org.apache.log4j.{ConsoleAppender, SimpleLayout, Level, Logger}
 import shapeless.nat._
 import shapelessJoin._
+import shapelessJoin.Compare._
 
 class EventsSpec extends FlatSpec with BeforeAndAfter {
   val appender = new ConsoleAppender(new SimpleLayout())
@@ -203,7 +204,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[(Int)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on C(_0,_0)
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 === _0)
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
@@ -227,7 +228,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[Int]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1 join e2 window time(30 sec) on C(_0, _0)
+    val e3 = e1 join e2 window time(30 sec) on (_0 === _0)
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
@@ -286,7 +287,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[(Int, String)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1 join e2 window time(30 sec) on C(_0,_0)
+    val e3 = e1 join e2 window time(30 sec) on (_0 === _0)
     val r1 = (e: (Int, String, String)) => testString += e._3
     e3 += r1
     e1((1, "one"))
