@@ -74,42 +74,88 @@ object TupleOps {
   }
 }
 
-object BE {
-  import shapeless.ops.tuple._
-  trait BoolAST[T <: Product, U <: Product]
-  class BoolExprLeaf[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](op: String, at1: At[T, N1],
-                                                                       at2: At[U, N2]) extends BoolAST[T, U]
-  class BoolExprNode[T <: Product, U <: Product](astL: BoolAST[T, U], astR: BoolAST[T, U], op: String) extends BoolAST[T, U]
+//object BE {
+//  import shapeless.ops.tuple._
+//  trait BoolAST[T <: Product, U <: Product]
+//  class BoolExprLeaf[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](op: String, at1: At[T, N1],
+//                                                                       at2: At[U, N2]) extends BoolAST[T, U]
+//  class BoolExprNode[T <: Product, U <: Product](astL: BoolAST[T, U], astR: BoolAST[T, U], op: String) extends BoolAST[T, U]
+//
 
+//  object BoolAST {
+//    
+//    
+//    def and[T <: Product, U <: Product](ast1: BoolAST[T, U], ast2: BoolAST[T, U]) = {
+//      new BoolExprNode(ast1, ast2, "and")
+//    }
+//    def or[T <: Product, U <: Product](ast1: BoolAST[T, U], ast2: BoolAST[T, U]) = {
+//      new BoolExprNode(ast1, ast2, "or")
+//    }
+//    
+//      
+//    
+//    def <=[N1 <: Nat, N2 <: Nat, T <: Product, U <: Product](n1: N1, n2: N2)(implicit tup : (T,U), at1: At[T, N1], at2: At[U, N2]) = new BoolExprLeaf("<=", at1, at2)
+//    def ===[N1 <: Nat, N2 <: Nat, T <: Product, U <: Product](n1: N1, n2: N2)(implicit tup : (T,U), at1: At[T, N1], at2: At[U, N2]) = new BoolExprLeaf("=", at1, at2)
+//    
+//    def create[T <: Product, U <: Product]( t : T, u : U)(f : ((T,U)) => BoolAST[T,U]){
+//      f((t,u))
+//    }
+//  }
+//
+//}
+//object Test extends App {
+//  import BE._
+//  import BE.BoolAST._
+//  
+//  create((3, "Hallo"), (3, Some(3), "Du"))( x  => {
+//    implicit val contex = x
+//    and(and(<=(Nat(1), Nat(2)), <=(Nat(1), Nat(2))), <=(_1, _2))
+//  })
+//}
+//
+  
+object BoolASTObs{
+  trait BoolAST[T <: Product ,U <: Product] {
+    //def &&&(ast : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](this,ast)
+  }
+  //case class LEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](n1 : N1,  n2 : N2) extends BoolAST[T,U]
+  case class And[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U]
+ 
+  //implicit def natToMyNat[N <: Nat](n : N) = new MyNat(n)
+  implicit class MyNat[N <: Nat](n : N){
+    import LEq._
+    def <==[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  leq : LEq[T,U,N,N2]) = leq
+  }
+  
+  
+  
+  class BoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]){   
+     def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)
+  }
+  implicit def boolASTtoBoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]) = new BoolASTOp[T,U](ast1)
+  
+  
+  
+  
+  trait LEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]  
 
-  object BoolAST {
-    
-    
-    def and[T <: Product, U <: Product](ast1: BoolAST[T, U], ast2: BoolAST[T, U]) = {
-      new BoolExprNode(ast1, ast2, "and")
-    }
-    def or[T <: Product, U <: Product](ast1: BoolAST[T, U], ast2: BoolAST[T, U]) = {
-      new BoolExprNode(ast1, ast2, "or")
-    }
-    
+  object LEq {
+    import shapeless.ops.tuple._
+   // type Aux[T<: Product,  U <: Product, N1 <: Nat, N2 <: Nat] = LEq[T,U,N1,N2]
+    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                            at2: At[U, N2]) =
+      new LEq[T,U,N1,N2] {        
+      }
+  }
+  
+implicitly[LEq[(Int,Int), (Int,Int), _0,_0]]
+ // val e : BoolAST[(Int,Int),(Int,Int)] =( (_0 <== _0) &&& (_0 <== _0))
+ join((1,2,3,4),(1,2,3,4))(  And(_0 <== _0,  And(_0 <== _0, _0 <== _0) )  )
+  
+  
+  object join{
+    def apply[T <: Product ,U <: Product](t : T , u : U)(ast : BoolAST[T,U]){
       
-    
-    def <=[N1 <: Nat, N2 <: Nat, T <: Product, U <: Product](n1: N1, n2: N2)(implicit tup : (T,U), at1: At[T, N1], at2: At[U, N2]) = new BoolExprLeaf("<=", at1, at2)
-    def ===[N1 <: Nat, N2 <: Nat, T <: Product, U <: Product](n1: N1, n2: N2)(implicit tup : (T,U), at1: At[T, N1], at2: At[U, N2]) = new BoolExprLeaf("=", at1, at2)
-    
-    def create[T <: Product, U <: Product]( t : T, u : U)(f : ((T,U)) => BoolAST[T,U]){
-      f((t,u))
     }
   }
-
-}
-object Test extends App {
-  import BE._
-  import BE.BoolAST._
-  
-  create((3, "Hallo"), (3, Some(3), "Du"))( x  => {
-    implicit val contex = x
-    and(and(<=(Nat(1), Nat(2)), <=(Nat(1), Nat(2))), <=(_1, _2))
-  })
-}
-
+}  
