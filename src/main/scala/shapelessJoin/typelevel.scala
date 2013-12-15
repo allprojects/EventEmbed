@@ -120,25 +120,31 @@ object BoolASTObs{
   }
   //case class LEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](n1 : N1,  n2 : N2) extends BoolAST[T,U]
   case class And[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U]
+  case class Or[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U]
  
   //implicit def natToMyNat[N <: Nat](n : N) = new MyNat(n)
   implicit class MyNat[N <: Nat](n : N){
     import LEq._
     def <==[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  leq : LEq[T,U,N,N2]) = leq
+    def ===[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  eeq : EEq[T,U,N,N2]) = eeq
+    def !==[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  neq : NEq[T,U,N,N2]) = neq
+    def >==[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  geq : GEq[T,U,N,N2]) = geq
+    def >[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  gt : GTq[T,U,N,N2]) = gt
+    def <[T <: Product ,U <: Product,N2 <:Nat](n2 : N2)(implicit  lt : LTq[T,U,N,N2]) = lt
   }
   
   
   
-  class BoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]){   
-     def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)
+  class BoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]){
+    def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)
+    def |||(ast2 : BoolAST[T,U]) : BoolAST[T,U] = Or[T,U](ast1,ast2)
   }
   implicit def boolASTtoBoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]) = new BoolASTOp[T,U](ast1)
   
   
   
   
-  trait LEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]  
-
+  trait LEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
   object LEq {
     import shapeless.ops.tuple._
    // type Aux[T<: Product,  U <: Product, N1 <: Nat, N2 <: Nat] = LEq[T,U,N1,N2]
@@ -147,10 +153,50 @@ object BoolASTObs{
       new LEq[T,U,N1,N2] {        
       }
   }
+  trait EEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
+  object EEq {
+    import shapeless.ops.tuple._
+    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                                      at2: At[U, N2]) =
+      new EEq[T,U,N1,N2] {
+      }
+  }
+  trait NEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
+  object NEq {
+    import shapeless.ops.tuple._
+    implicit def neq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                                      at2: At[U, N2]) =
+      new NEq[T,U,N1,N2] {
+      }
+  }
+  trait GEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
+  object GEq {
+    import shapeless.ops.tuple._
+    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                                      at2: At[U, N2]) =
+      new GEq[T,U,N1,N2] {
+      }
+  }
+  trait GTq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
+  object GTq {
+    import shapeless.ops.tuple._
+    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                                      at2: At[U, N2]) =
+      new GTq[T,U,N1,N2] {
+      }
+  }
+  trait LTq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat] extends BoolAST[T,U]
+  object LTq {
+    import shapeless.ops.tuple._
+    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1],
+                                                                      at2: At[U, N2]) =
+      new LTq[T,U,N1,N2] {
+      }
+  }
   
-implicitly[LEq[(Int,Int), (Int,Int), _0,_0]]
+ implicitly[LEq[(Int,Int), (Int,Int), _0,_0]]
  // val e : BoolAST[(Int,Int),(Int,Int)] =( (_0 <== _0) &&& (_0 <== _0))
- join((1,2,3,4),(1,2,3,4))(  And(_0 <== _0,  And(_0 <== _0, _0 <== _0) )  )
+ join((1,2,3,4),(1,2,3,4))(  And(Or(_0 === _0, _0 !== _0),  Or(_0 <== _0, _0 >== _0) )  )
   
   
   object join{
