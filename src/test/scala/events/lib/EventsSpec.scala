@@ -11,6 +11,7 @@ import org.apache.log4j.{ConsoleAppender, SimpleLayout, Level, Logger}
 import shapeless.nat._
 import shapelessJoin._
 import shapelessJoin.Compare._
+import shapelessJoin.BoolASTObs._
 
 class EventsSpec extends FlatSpec with BeforeAndAfter {
   val appender = new ConsoleAppender(new SimpleLayout())
@@ -205,6 +206,30 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     val e1 = new ImperativeEvent[(Int)]
     val e2 = new ImperativeEvent[(Int, String)]
     val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 === _0)
+    val r1 = (e: (Int, String)) => testString += e._2
+    e3 += r1
+    e1(1)
+    e1(2)
+    e1(4)
+    e1(5)
+    e1(8)
+    e2(1, "This ")
+    e2(2, "is ")
+    e2(3, "gibberish")
+    e2(4, "some ")
+    e2(5, "secret ")
+    e2(6, "gibberish ")
+    e2(7, "gibberish ")
+    e2(8, "message.")
+    assert(testString === "This is some secret message.")
+  }
+
+   "An Event Join using explicit select" should "trigger a reaction when two events which are joined are received and the condition matches" in {
+    import EventsLibConversions._
+    var testString = ""
+    val e1 = new ImperativeEvent[(Int)]
+    val e2 = new ImperativeEvent[(Int, String)]
+    val e3 = e1.window (time(30 sec)) joinSelect e2.window(time(30 sec)) where (_0 <== _0, (x: Tuple1[Int], y:(Int, String)) => { (x._1, y._2) })
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)

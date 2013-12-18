@@ -12,6 +12,7 @@ import shapeless._, ops.tuple._, nat._
 import com.espertech.esper.event.arr.ObjectArrayEventBean
 import shapelessJoin._
 import shapelessJoin.TupleOps._
+import shapelessJoin.BoolASTObs._
 import shapeless.ops.nat._
 //import shapeless.nat.nat._
 
@@ -372,11 +373,12 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
 
   override def toString = "(" + ev1.name + " joinOn(" + condition + ") " + ev2.name + ")"
 }
+
 class EventNodeJoin2[T <: Product, U <: Product, Z <: Product](ev1: Event[T],
                                                    ev2: Event[U],
-                                                   where : (T,U) => Boolean,
+                                                   where : BoolAST[T,U],
                                                    pi : (T,U) => Z) extends EventNode[Z]{
-  override val statement = CEPEngine.createEPL("select istream * from " )//+ name)
+  override val statement = CEPEngine.createEPL("select istream * from " + where)//+ name)
 
 }
 
@@ -476,8 +478,9 @@ case class DSLWindowJoin[T <: Product](event: Event[T], window: DSLWindow) {
    * Join the Event with another Event
    */
   def join[U <: Product](other: DSLWindowJoin[U]) = new DSLWindowJoinOn[T, U](this, other)
-  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U])(where : (T,U) => Boolean)(pi : (T,U) => RES) =
-      new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
+  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U]) =
+      //new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
+      new DSLWindowJoinOn[T, U](this, other)
 }
 
 case class DSLWindowJoinOn[T <: Product, U <: Product](ev1: DSLWindowJoin[T], ev2: DSLWindowJoin[U]) {
@@ -486,6 +489,7 @@ case class DSLWindowJoinOn[T <: Product, U <: Product](ev1: DSLWindowJoin[T], ev
    */
   def on[N1 <: Nat, N2 <: Nat](condition: Compare[N1,N2])(implicit join: Join[N1,N2,T,U]) = 
       new EventNodeJoin[T, U, join.Out, N1,N2](ev1.event, ev2.event, ev1.window.repr, ev2.window.repr, condition)
+  def where[RES <: Product](where : BoolAST[T,U], pi : (T,U) => RES) = new EventNodeJoin2[T,U,RES](ev1.event,ev2.event,where,pi);
 }
 
 case class TupleEvent[T <: Product](event: Event[T]) {
@@ -494,7 +498,7 @@ case class TupleEvent[T <: Product](event: Event[T]) {
    * Used for Event Joining
    */
   def join[U <: Product](other: TupleEvent[U]) = new DSLJoinWindow[T, U](event, other.event)
-  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U])(where : (T,U) => Boolean)(pi : (T,U) => RES) =
+  def joinSelect[U <: Product, RES <: Product](other : TupleEvent[U])(where : BoolAST[T,U])(pi : (T,U) => RES) =
       new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
 
   /**
