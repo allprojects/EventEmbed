@@ -76,13 +76,14 @@ object TupleOps {
 
 object BoolASTObs{
   trait BoolAST[T <: Product ,U <: Product] {
+    def name(ev1: String, ev2: String): String
     // Would be nice to use &&& but somehow type inference fails. It works however if
     // we use plain And.
     //def &&&(ast : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](this,ast)
   }
 
   case class And[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U] {
-    override val toString = "(" + a1.toString + ") && (" + a2.toString + ")"
+    def name(ev1: String, ev2: String) = "(" + a1.name(ev1, ev2) + ") && (" + a2.name(ev1, ev2) + ")"
   }
  
   implicit class MyNat[N <: Nat](n : N){
@@ -95,7 +96,7 @@ object BoolASTObs{
   }
 
   class LEq[T <: Product, U <: Product, N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
-    override val toString = v1() + " <= " + v2()
+    def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " <= " + ev2 + ".P" + (v2() + 1)
   }
 
   object LEq {

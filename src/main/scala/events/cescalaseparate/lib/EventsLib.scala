@@ -374,11 +374,31 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
   override def toString = "(" + ev1.name + " joinOn(" + condition + ") " + ev2.name + ")"
 }
 
-class EventNodeJoin2[T <: Product, U <: Product, Z <: Product](ev1: Event[T],
+class EventNodeJoin2[T <: Product, U <: Product, TU <: Product, Z <: Product, LT <: Nat](ev1: Event[T],
                                                    ev2: Event[U],
+                                                   window1 : String,
+                                                   window2 : String,
                                                    where : BoolAST[T,U],
-                                                   pi : (T,U) => Z) extends EventNode[Z]{
-  override val statement = CEPEngine.createEPL("select istream * from " + where)//+ name)
+                                                   pi : (T,U) => Z)
+                                                   (implicit ptu : Prepend.Aux[T, U, TU],
+                                                              lt : Length.Aux[T, LT],
+                                                             stu : Split.Aux[TU, LT, (T, U)]) extends EventNode[Z]{
+  override val statement = CEPEngine.createEPL("insert istream into " + name + " select * from "
+                                                + ev1.name + ".win:" + window1 + ", " + ev2.name + ".win:" + window2
+                                                + " where " + where.name(ev1.name, ev2.name))
+
+  override def MyListener(react: Z => Unit) = new UpdateListener {
+    override def update(newEvents: Array[EventBean], oldEvents: Array[EventBean]) {
+      val event = newEvents(0)
+//      ev1PropCount + ev2PropCount match {
+//        case 0 => react(Unit.asInstanceOf[Z])
+//        case 1 => react(event.get("P1").asInstanceOf[Z])
+//        case p =>
+//          val properties = for (p <- 1 to p if p != (condition.getValue2 + ev1PropCount + 1)) yield event.get("P" + p)
+//          react(CEPEngine.toTuple(properties.toArray).asInstanceOf[Z])
+//      }
+    }
+  }
 
 }
 
@@ -478,9 +498,6 @@ case class DSLWindowJoin[T <: Product](event: Event[T], window: DSLWindow) {
    * Join the Event with another Event
    */
   def join[U <: Product](other: DSLWindowJoin[U]) = new DSLWindowJoinOn[T, U](this, other)
-  def joinSelect[U <: Product, RES <: Product](other : DSLWindowJoin[U]) =
-      //new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
-      new DSLWindowJoinOn[T, U](this, other)
 }
 
 case class DSLWindowJoinOn[T <: Product, U <: Product](ev1: DSLWindowJoin[T], ev2: DSLWindowJoin[U]) {
@@ -489,7 +506,7 @@ case class DSLWindowJoinOn[T <: Product, U <: Product](ev1: DSLWindowJoin[T], ev
    */
   def on[N1 <: Nat, N2 <: Nat](condition: Compare[N1,N2])(implicit join: Join[N1,N2,T,U]) = 
       new EventNodeJoin[T, U, join.Out, N1,N2](ev1.event, ev2.event, ev1.window.repr, ev2.window.repr, condition)
-  def where[RES <: Product](where : BoolAST[T,U], pi : (T,U) => RES) = new EventNodeJoin2[T,U,RES](ev1.event,ev2.event,where,pi);
+  def where[RES <: Product](where : BoolAST[T,U], pi : (T,U) => RES) = new EventNodeJoin2[T,U,RES](ev1.event,ev2.event, ev1.window.repr, ev2.window.repr, where,pi);
 }
 
 case class TupleEvent[T <: Product](event: Event[T]) {
@@ -498,8 +515,8 @@ case class TupleEvent[T <: Product](event: Event[T]) {
    * Used for Event Joining
    */
   def join[U <: Product](other: TupleEvent[U]) = new DSLJoinWindow[T, U](event, other.event)
-  def joinSelect[U <: Product, RES <: Product](other : TupleEvent[U])(where : BoolAST[T,U])(pi : (T,U) => RES) =
-      new EventNodeJoin2[T,U,RES](event,other.event,where,pi);
+//  def joinSelect[U <: Product, RES <: Product](other : TupleEvent[U])(where : BoolAST[T,U])(pi : (T,U) => RES) =
+//      new EventNodeJoin2[T,U,RES](event,other.event, event.window.repr, other.event.window.repr, where,pi);
 
   /**
    * Add a window to the Event (e.g. last 30 seconds: "time(30 sec)")
