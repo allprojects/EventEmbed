@@ -338,7 +338,7 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
 
   private val select = mutable.Buffer[String]()
   for (i <- 1 to ev1PropCount) select += ev1.name + ".P" + i + " as " + "P" + i
-  for (i <- 1 to ev2PropCount if i != (condition.getValue2() + 1)) select += ev2.name + ".P" + i + " as " + "P" + (ev1PropCount + i)
+  for (i <- 1 to ev2PropCount if i != (condition.getValue2 + 1)) select += ev2.name + ".P" + i + " as " + "P" + (ev1PropCount + i)
 
   CEPEngine.createEPL(
     "insert istream into " + name +
@@ -347,7 +347,7 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
       " " + esperWhere(condition, ev1.name, ev2.name))
 
   def esperWhere(condition: Compare[N1, N2], evName1: String, evName2: String)
-    = "where " + evName1 + ".P" + (condition.getValue1() + 1) + " = " + evName2 + ".P" + (condition.getValue2() + 1)
+    = "where " + evName1 + ".P" + (condition.getValue1 + 1) + " = " + evName2 + ".P" + (condition.getValue2 + 1)
 
   override val statement = CEPEngine.createEPL("select istream * from " + name)
 
@@ -364,7 +364,7 @@ class EventNodeJoin[T <: Product, U <: Product, Z, N1 <: Nat, N2 <: Nat](ev1: Ev
         case 0 => react(Unit.asInstanceOf[Z])
         case 1 => react(event.get("P1").asInstanceOf[Z])
         case p =>
-          val properties = for (p <- 1 to p if p != (condition.getValue2() + ev1PropCount + 1)) yield event.get("P" + p)
+          val properties = for (p <- 1 to p if p != (condition.getValue2 + ev1PropCount + 1)) yield event.get("P" + p)
           react(CEPEngine.toTuple(properties.toArray).asInstanceOf[Z])
       }
     }
