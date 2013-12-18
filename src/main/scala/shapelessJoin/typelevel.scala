@@ -8,15 +8,13 @@ import shapelessJoin.HListOps._
 
 import shapeless.ops.nat._
 
-class Compare[N1 <: Nat, N2 <: Nat](v1: ToInt[N1], v2: ToInt[N1]) {
-  def getValue1 = v1
-  def getValue2 = v2
+class Compare[N1 <: Nat, N2 <: Nat](v1: ToInt[N1], v2: ToInt[N2]) {
   def getValue1 = v1()
   def getValue2 = v2()
 }
 
 class RichNat[N1 <: Nat](n1: N1) {
-  def ===[N2 <: Nat](n2: N2)(implicit v1: ToInt[N1], v2: ToInt[N1]) = {
+  def ===[N2 <: Nat](n2: N2)(implicit v1: ToInt[N1], v2: ToInt[N2]) = {
     new Compare[N1, N2](v1, v2)
   }
 }
