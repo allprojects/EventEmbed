@@ -205,7 +205,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[(Int)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 === _0)
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 =:= _0)
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
@@ -229,7 +229,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[(Int)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 <== _0, (x: Tuple1[Int], y:(Int, String)) => { (y._2) })
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 <== _0, (x: Tuple1[Int], y:(Int, String)) => { (y._1, y._2) })
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
@@ -253,7 +253,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[Int]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1 join e2 window time(30 sec) on (_0 === _0)
+    val e3 = e1 join e2 window time(30 sec) on (_0 =:= _0)
     val r1 = (e: (Int, String)) => testString += e._2
     e3 += r1
     e1(1)
@@ -312,7 +312,7 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     var testString = ""
     val e1 = new ImperativeEvent[(Int, String)]
     val e2 = new ImperativeEvent[(Int, String)]
-    val e3 = e1 join e2 window time(30 sec) on (_0 === _0)
+    val e3 = e1 join e2 window time(30 sec) on (_0 =:= _0)
     val r1 = (e: (Int, String, String)) => testString += e._3
     e3 += r1
     e1((1, "one"))
