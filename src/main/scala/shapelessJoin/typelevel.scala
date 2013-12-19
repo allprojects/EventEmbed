@@ -124,7 +124,7 @@ object BoolASTObs{
   }
 
   object EEq {
-    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
+    implicit def eeq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
       new EEq[T, U, N1, N2] {}
   }
 
@@ -142,7 +142,7 @@ object BoolASTObs{
   }
 
   object GEq {
-    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def geq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
       new GEq[T, U, N1, N2] {}
   }
 
@@ -151,7 +151,7 @@ object BoolASTObs{
   }
 
   object GTq {
-    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def gt[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
       new GTq[T, U, N1, N2] {}
   }
 
@@ -159,7 +159,7 @@ object BoolASTObs{
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " < " + ev2 + ".P" + (v2() + 1)
   }
   object LTq {
-    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def lt[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
       new LTq[T, U, N1, N2] {}
   }
 }
