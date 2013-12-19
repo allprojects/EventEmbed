@@ -1,5 +1,7 @@
 package shapelessJoin
 
+import scala.annotation.implicitNotFound
+
 import shapeless._
 import shapeless.ops.hlist._
 import shapeless.nat._
@@ -59,6 +61,7 @@ object HListOps {
 }
 
 object TupleOps {
+  @implicitNotFound(msg = "Either ${N1} or ${N2} are out of bounds or have incompatible types.")
   trait Join[N1 <: Nat, N2 <: Nat, TUP1 <: Product, TUP2 <: Product] { type Out }
 
   object Join {
@@ -110,6 +113,7 @@ object BoolASTObs{
     def <[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit lt : LTq[T,U,N,N2]) = lt
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class LEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " <= " + ev2 + ".P" + (v2() + 1)
   }
@@ -119,6 +123,7 @@ object BoolASTObs{
       new LEq[T, U, N1, N2] {}
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class EEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " = " + ev2 + ".P" + (v2() + 1)
   }
@@ -128,6 +133,7 @@ object BoolASTObs{
       new EEq[T, U, N1, N2] {}
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class NEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " != " + ev2 + ".P" + (v2() + 1)
   }
@@ -137,6 +143,7 @@ object BoolASTObs{
       new NEq[T, U, N1, N2] {}
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class GEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " >= " + ev2 + ".P" + (v2() + 1)
   }
@@ -146,6 +153,7 @@ object BoolASTObs{
       new GEq[T, U, N1, N2] {}
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class GTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " > " + ev2 + ".P" + (v2() + 1)
   }
@@ -155,6 +163,7 @@ object BoolASTObs{
       new GTq[T, U, N1, N2] {}
   }
 
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
   class LTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " < " + ev2 + ".P" + (v2() + 1)
   }
