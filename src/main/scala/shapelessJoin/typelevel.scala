@@ -5,9 +5,6 @@ import scala.annotation.implicitNotFound
 import shapeless._
 import shapeless.ops.hlist._
 import shapeless.nat._
-import shapeless.NatMacros._
-import shapelessJoin.HListOps._
-
 import shapeless.ops.nat._
 
 class Compare[N1 <: Nat, N2 <: Nat](v1: ToInt[N1], v2: ToInt[N2]) {

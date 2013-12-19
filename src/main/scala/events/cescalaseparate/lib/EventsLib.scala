@@ -1,6 +1,5 @@
 package events.cescalaseparate.lib
 
-
 import scala.language.implicitConversions
 import scala.language.postfixOps
 import com.espertech.esper.client._
@@ -13,7 +12,6 @@ import com.espertech.esper.event.arr.ObjectArrayEventBean
 import shapelessJoin._
 import shapelessJoin.TupleOps._
 import shapelessJoin.BoolASTObs._
-import shapeless.ops.nat._
 
 object CEPEngine {
   /* Configure the CEP engine */
