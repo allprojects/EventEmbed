@@ -75,45 +75,48 @@ object TupleOps {
 }
 
 object BoolASTObs{
+  import shapeless.ops.tuple._
+
   trait BoolAST[T <: Product ,U <: Product] {
-    def name(ev1: String, ev2: String): String
+    def name(ev1 : String, ev2 : String) : String
     // Would be nice to use &&& but somehow type inference fails. It works however if
     // we use plain And.
     //def &&&(ast : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](this,ast)
   }
 
-  case class And[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = "(" + a1.name(ev1, ev2) + ") && (" + a2.name(ev1, ev2) + ")"
+  case class And[T <: Product, U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = "(" + a1.name(ev1, ev2) + " AND " + a2.name(ev1, ev2) + ")"
   }
 
-  case class Or[T <: Product ,U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = "(" + a1.name(ev1, ev2) + ") || (" + a2.name(ev1, ev2) + ")"
+  case class Or[T <: Product, U <: Product](a1 : BoolAST[T,U], a2 : BoolAST[T,U]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = "(" + a1.name(ev1, ev2) + " OR " + a2.name(ev1, ev2) + ")"
   }
- 
-  implicit class MyNat[N <: Nat](n : N){
-    import LEq._
 
-    def <==[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  leq : LEq[T,U,N,N2]) = leq
-    def ===[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  eeq : EEq[T,U,N,N2]) = eeq
-    def !==[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  neq : NEq[T,U,N,N2]) = neq
-    def >==[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  geq : GEq[T,U,N,N2]) = geq
-    def >[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  gt : GTq[T,U,N,N2]) = gt
-    def <[T <: Product, U <: Product, N2 <:Nat](n2 : N2)(implicit  lt : LTq[T,U,N,N2]) = lt
+  case class Not[T <: Product, U <: Product](a : BoolAST[T,U]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = "NOT (" + a.name(ev1, ev2) + ")"
   }
 
   implicit class BoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]){
-     def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)
-     def |||(ast2 : BoolAST[T,U]) : BoolAST[T,U] = Or[T,U](ast1,ast2)
+    def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)
+    def |||(ast2 : BoolAST[T,U]) : BoolAST[T,U] = Or[T,U](ast1,ast2)
   }
 
-  class LEq[T <: Product, U <: Product, N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " <= " + ev2 + ".P" + (v2() + 1)
+  implicit class MyNat[N <: Nat](n : N){
+    def <==[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit leq : LEq[T,U,N,N2]) = leq
+    def ===[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit eeq : EEq[T,U,N,N2]) = eeq
+    def !==[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit neq : NEq[T,U,N,N2]) = neq
+    def >==[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit geq : GEq[T,U,N,N2]) = geq
+    def >[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit gt : GTq[T,U,N,N2]) = gt
+    def <[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit lt : LTq[T,U,N,N2]) = lt
+  }
+
+  class LEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " <= " + ev2 + ".P" + (v2() + 1)
   }
 
   object LEq {
-    import shapeless.ops.tuple._
-    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new LEq[T,U,N1,N2] {}
+    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
+      new LEq[T, U, N1, N2] {}
   }
 
   class EEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
@@ -121,55 +124,42 @@ object BoolASTObs{
   }
 
   object EEq {
-    import shapeless.ops.tuple._
-    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new EEq[T,U,N1,N2] {}
+    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
+      new EEq[T, U, N1, N2] {}
   }
 
-  class NEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
+  class NEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " != " + ev2 + ".P" + (v2() + 1)
   }
 
   object NEq {
-    import shapeless.ops.tuple._
-    implicit def neq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new NEq[T,U,N1,N2] {}
+    implicit def neq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+      new NEq[T, U, N1, N2] {}
   }
 
-  class GEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " >= " + ev2 + ".P" + (v2() + 1)
+  class GEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " >= " + ev2 + ".P" + (v2() + 1)
   }
 
   object GEq {
-    import shapeless.ops.tuple._
-    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new GEq[T,U,N1,N2] {}
+    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+      new GEq[T, U, N1, N2] {}
   }
 
-  class GTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " > " + ev2 + ".P" + (v2() + 1)
+  class GTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " > " + ev2 + ".P" + (v2() + 1)
   }
 
   object GTq {
-    import shapeless.ops.tuple._
-    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new GTq[T,U,N1,N2] {}
+    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+      new GTq[T, U, N1, N2] {}
   }
 
-  class LTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
-    def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " < " + ev2 + ".P" + (v2() + 1)
+  class LTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
+    def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " < " + ev2 + ".P" + (v2() + 1)
   }
   object LTq {
-    import shapeless.ops.tuple._
-    implicit def leq[T<: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
-      new LTq[T,U,N1,N2] {}
+    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+      new LTq[T, U, N1, N2] {}
   }
-
-// join((1,2,3,4),(1,2,3,4))(  And(_0 <== _0,  And(_0 <== _0, _0 <== _0) )  )
-// join((1,2,3,4),(1,2,3,4))(  And(Or(_0 === _0, _0 !== _0),  Or(_0 <== _0, _0 >== _0) )  )
-//
-//  // dummy helper
-//  object join{
-//    def apply[T <: Product ,U <: Product](t : T , u : U)(ast : BoolAST[T,U]) {}
-//  }
-}  
+}

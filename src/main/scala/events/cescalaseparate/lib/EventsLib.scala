@@ -490,7 +490,6 @@ case class DSLJoinWindowOn[T <: Product, U <: Product](events: DSLJoinWindow[T, 
    */
   def on[N1 <: Nat, N2 <: Nat](condition: Compare[N1,N2])(implicit join : Join[N1,N2,T,U]) =
       new EventNodeJoin[T, U, join.Out,N1,N2](events.ev1, events.ev2, window.repr, window.repr, condition)
-
 }
 
 case class DSLWindowJoin[T <: Product](event: Event[T], window: DSLWindow) {
@@ -507,7 +506,7 @@ case class DSLWindowJoinOn[T <: Product, U <: Product](ev1: DSLWindowJoin[T], ev
   def on[N1 <: Nat, N2 <: Nat](condition: Compare[N1,N2])(implicit join: Join[N1,N2,T,U]) = 
       new EventNodeJoin[T, U, join.Out, N1,N2](ev1.event, ev2.event, ev1.window.repr, ev2.window.repr, condition)
   def where[RES <: Product](whereExpr : BoolAST[T,U], pi : (T,U) => RES) =
-      new EventNodeJoinExplicitSelect[T,U,RES](ev1.event,ev2.event, ev1.window.repr, ev2.window.repr, whereExpr, pi);
+      new EventNodeJoinExplicitSelect[T,U,RES](ev1.event, ev2.event, ev1.window.repr, ev2.window.repr, whereExpr, pi);
 }
 
 case class TupleEvent[T <: Product](event: Event[T]) {
