@@ -110,62 +110,62 @@ object BoolASTObs{
     def <[T <: Product, U <: Product, N2 <: Nat](n2 : N2)(implicit lt : LTq[T,U,N,N2]) = lt
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class LEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " <= " + ev2 + ".P" + (v2() + 1)
   }
 
   object LEq {
-    implicit def leq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
+    implicit def leq[T <: Product, U <: Product, S, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2 : At.Aux[U, N2, S], v1 : ToInt[N1], v2 : ToInt[N2]) =
       new LEq[T, U, N1, N2] {}
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class EEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1: ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " = " + ev2 + ".P" + (v2() + 1)
   }
 
   object EEq {
-    implicit def eeq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2 : At[U, N2], v1 : ToInt[N1], v2 : ToInt[N2]) =
+    implicit def eeq[T <: Product, U <: Product, S, V, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2 : At.Aux[U, N2, S], v1 : ToInt[N1], v2 : ToInt[N2]) =
       new EEq[T, U, N1, N2] {}
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class NEq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2 : ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1: String, ev2: String) = ev1 + ".P" + (v1() + 1) + " != " + ev2 + ".P" + (v2() + 1)
   }
 
   object NEq {
-    implicit def neq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def neq[T <: Product, U <: Product, S, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2: At.Aux[U, N2, S], v1: ToInt[N1], v2: ToInt[N2]) =
       new NEq[T, U, N1, N2] {}
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class GEq[T <: Product ,U <: Product,N1 <: Nat,N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " >= " + ev2 + ".P" + (v2() + 1)
   }
 
   object GEq {
-    implicit def geq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def geq[T <: Product, U <: Product, S, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2: At.Aux[U, N2, S], v1: ToInt[N1], v2: ToInt[N2]) =
       new GEq[T, U, N1, N2] {}
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class GTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " > " + ev2 + ".P" + (v2() + 1)
   }
 
   object GTq {
-    implicit def gt[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def gt[T <: Product, U <: Product, S, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2: At.Aux[U, N2, S], v1: ToInt[N1], v2: ToInt[N2]) =
       new GTq[T, U, N1, N2] {}
   }
 
-  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds.")
+  @implicitNotFound(msg = "${N1} or ${N2} are out of bounds or the compared fields have different types.")
   class LTq[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit v1 : ToInt[N1], v2: ToInt[N2]) extends BoolAST[T,U] {
     def name(ev1 : String, ev2 : String) = ev1 + ".P" + (v1() + 1) + " < " + ev2 + ".P" + (v2() + 1)
   }
   object LTq {
-    implicit def lt[T <: Product, U <: Product, N1 <: Nat, N2 <: Nat](implicit at1 : At[T, N1], at2: At[U, N2], v1: ToInt[N1], v2: ToInt[N2]) =
+    implicit def lt[T <: Product, U <: Product, S, N1 <: Nat, N2 <: Nat](implicit at1 : At.Aux[T, N1, S], at2: At.Aux[U, N2, S], v1: ToInt[N1], v2: ToInt[N2]) =
       new LTq[T, U, N1, N2] {}
   }
 }
