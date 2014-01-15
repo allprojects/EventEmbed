@@ -201,6 +201,52 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     assert(test === 3)
   }
 
+  "A person that is deboarding a flight" should "be able to find their baggage" in {
+    import EventsLibConversions._
+
+    val personDeboarded   = new ImperativeEvent[(String,Int)]
+    val baggageOnConveyor = new ImperativeEvent[(Int,String)]
+
+    /*
+     * Persons that deboarded from a flight catch their
+     * baggages from the suitcase conveyor
+     *
+     * Join the baggage id which the person has remembered
+     * with the id tag on the baggage.
+     *
+     * The second argument for the 'where' method is a projection
+     * function that maps to tuples for which the previous condition
+     * holds to a result type.
+     */
+    val personGoingHome =
+      (personDeboarded.window(length(3))
+        join
+        baggageOnConveyor.window(length(3)))
+          .where( _1 === _0,
+                { case ((name,_), (_,desc)) => (name,desc) })
+
+    var personsThatFoundTheirBaggage = new scala.collection.mutable.MutableList[(String,String)]()
+    personGoingHome += { personsThatFoundTheirBaggage += _ }
+
+    // The persons and baggages arrive in different order than they got
+    // numerated at the checkin
+    personDeboarded("Dan",     4)
+    personDeboarded("Bob",     2)
+    personDeboarded("Charlie", 3)
+    personDeboarded("Alice",   1)
+    baggageOnConveyor(3, "blue suitcase")
+    baggageOnConveyor(1, "yellow travel bag")
+    baggageOnConveyor(2, "green backpack")
+    baggageOnConveyor(4, "orange suitcase")
+
+    // the last package got lost on the airport.
+    // Poor Dan :(
+    assert(personsThatFoundTheirBaggage
+           === List( ("Charlie", "blue suitcase"),
+                     ("Alice",   "yellow travel bag"),
+                     ("Bob",     "green backpack") ))
+  }
+
   "An Event Join" should "trigger a reaction when two events which are joined are received and the condition matches" in {
     import EventsLibConversions._
     var testString = ""
@@ -273,22 +319,22 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     assert(testString === "This some message.")
   }
 
-  "An Event Join using explicit select" should "join two events if the condition contains a 'less than' connective" in {
-    import EventsLibConversions._
-    var sum = 0
-    val e1 = new ImperativeEvent[Tuple1[Int]]
-    val e2 = new ImperativeEvent[Tuple1[Int]]
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 < _0, (x, y) => { val tup = (x._1, y._1) ; println(tup) ; tup })
-    val r1 = (e: (Int, Int)) => sum += e._1 + e._2
-    e3 += r1
-    e1(Tuple1(1))
-    e1(Tuple1(2))
-    e1(Tuple1(3))
-    e2(Tuple1(1))
-    e2(Tuple1(2))
-    e2(Tuple1(3))
-    assert(sum === (1+2) + (1+3) + (2+3))
-  }
+  //"An Event Join using explicit select" should "join two events if the condition contains a 'less than' connective" in {
+    //import EventsLibConversions._
+    //var sum = 0
+    //val e1 = new ImperativeEvent[Tuple1[Int]]
+    //val e2 = new ImperativeEvent[Tuple1[Int]]
+    //val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 < _0, (x, y) => { val tup = (x._1, y._1) ; println(tup) ; tup })
+    //val r1 = (e: (Int, Int)) => sum += e._1 + e._2
+    //e3 += r1
+    //e1(Tuple1(1))
+    //e1(Tuple1(2))
+    //e1(Tuple1(3))
+    //e2(Tuple1(1))
+    //e2(Tuple1(2))
+    //e2(Tuple1(3))
+    //assert(sum === (1+2) + (1+3) + (2+3))
+  //}
 
   "An Event Join using explicit select" should "not typecheck if the condition uses nonexisting fields" in {
     import EventsLibConversions._
