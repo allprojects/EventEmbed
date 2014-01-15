@@ -8,6 +8,7 @@ import scala.language.implicitConversions
 import scala.language.postfixOps
 import scala.Predef._
 import org.apache.log4j.{ConsoleAppender, SimpleLayout, Level, Logger}
+import shapeless.test.illTyped
 import shapeless.nat._
 import shapelessJoin._
 import shapelessJoin.Compare._
@@ -246,6 +247,73 @@ class EventsSpec extends FlatSpec with BeforeAndAfter {
     e2(7, "gibberish ")
     e2(8, "message.")
     assert(testString === "This is some secret message.")
+  }
+
+  "An Event Join using explicit select" should "join two events if the condition contains a conjunction" in {
+    import EventsLibConversions._
+    var testString = ""
+    val e1 = new ImperativeEvent[(Int, String)]
+    val e2 = new ImperativeEvent[(Int, String)]
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (And(_0 === _0, _1 === _1), (x, y) => { (y._1, y._2) })
+    val r1 = (e: (Int, String)) => testString += e._2
+    e3 += r1
+    e1(1, "This ")
+    e1(2, "bla")
+    e1(4, "some ")
+    e1(5, "blub")
+    e1(8, "message.")
+    e2(1, "This ")
+    e2(2, "is ")
+    e2(3, "gibberish")
+    e2(4, "some ")
+    e2(5, "secret ")
+    e2(6, "gibberish ")
+    e2(7, "gibberish ")
+    e2(8, "message.")
+    assert(testString === "This some message.")
+  }
+
+  "An Event Join using explicit select" should "join two events if the condition contains a 'less than' connective" in {
+    import EventsLibConversions._
+    var sum = 0
+    val e1 = new ImperativeEvent[Tuple1[Int]]
+    val e2 = new ImperativeEvent[Tuple1[Int]]
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 < _0, (x, y) => { val tup = (x._1, y._1) ; println(tup) ; tup })
+    val r1 = (e: (Int, Int)) => sum += e._1 + e._2
+    e3 += r1
+    e1(Tuple1(1))
+    e1(Tuple1(2))
+    e1(Tuple1(3))
+    e2(Tuple1(1))
+    e2(Tuple1(2))
+    e2(Tuple1(3))
+    assert(sum === (1+2) + (1+3) + (2+3))
+  }
+
+  "An Event Join using explicit select" should "not typecheck if the condition uses nonexisting fields" in {
+    import EventsLibConversions._
+    var testString = ""
+    val e1 = new ImperativeEvent[(Int)]
+    val e2 = new ImperativeEvent[(Int, String)]
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 <== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 === _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 !== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 >== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 < _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_1 > _1, (x, y) => { (y._1, y._2) })")
+  }
+
+  "An Event Join using explicit select" should "not typecheck if fields of different types are compared" in {
+    import EventsLibConversions._
+    var testString = ""
+    val e1 = new ImperativeEvent[(Int)]
+    val e2 = new ImperativeEvent[(Int, String)]
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 <== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 === _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 !== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 >== _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 < _1, (x, y) => { (y._1, y._2) })")
+    illTyped("e1.window (time(30 sec)) join e2.window(time(30 sec)) where (_0 > _1, (x, y) => { (y._1, y._2) })")
   }
 
   "An Event Join with simplified syntax" should "trigger a reaction when two events which are joined are received and the condition matches" in {
