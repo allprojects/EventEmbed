@@ -1,10 +1,10 @@
 EventEmbed Shapeless Join
 =========================
 
-This modified cescala library allows for type safe joins of event streams.
+This modified CEScala library allows for type safe joins of event streams.
 
 ## Dependencies
-New Dependencies of this library are Shapeless.
+New dependencies of this library are Shapeless.
 
 ## Usage
 The following dependencies are needed in code that wants to use theses modified join operations:
@@ -18,7 +18,7 @@ import shapelessJoin.BoolASTObs._
 
 Throughout this library, Shapeless Nats are used for indexing HLists.
 The first couple of integers have a direct representation, for example
-_0 closely resembles 0, _2 resembles 2 and so on.
+`_0` closely resembles `0`, `_2` resembles `2` and so on.
 
 
 ### Simple joins
@@ -52,7 +52,7 @@ the compiler would see that _0 of the first event stream is a Int,
 but on the second stream is a String and respond with the following error:
 ```
 Either shapeless._0 or shapeless.nat._0 are out of bounds or have incompatible types.
-    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 =:= _1)
+    val e3 = e1.window (time(30 sec)) join e2.window(time(30 sec)) on (_0 =:= _0)
                                                                    ^
 ```
 
@@ -81,7 +81,7 @@ e2("words ",      4)
 // testString => "Hello Projection!"
 ```
 
-Also note, that projections always have to return a Tuple, even if this turns out to be a 1-tuple.
+Also note that projections always have to return a Tuple, even if this turns out to be a 1-tuple.
 
 The available compare functions are the following:
 ```
