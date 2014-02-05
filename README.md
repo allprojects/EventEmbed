@@ -3,6 +3,30 @@ EventEmbed Shapeless Join
 
 This modified CEScala library allows for type safe joins of event streams.
 
+## Motivation
+
+It is common in Scala to write strongly typed programs that allow to identify a lot of errors
+during compilation instead of runtime. In this library we provide a strongly typed interface
+for event joins. 
+
+A typical event join can look like this:
+
+```scala
+event1 = Event[(Int, Int)]
+event2 = Event[(Int, String)]
+event1 join event2 on (event1.0 == event2.0)
+```
+
+This looks fine on the first glance, but if we would change the type of `event2`:
+
+```scala
+event2 = Event[(String, Int)]
+```
+
+This is a case where a strongly typed interface is important. It catches, that
+the join compares two fields with an incompatible type (namely `Int` and `String`).
+Our library yields a type error for this example.
+
 ## Dependencies
 New dependencies of this library are Shapeless.
 
