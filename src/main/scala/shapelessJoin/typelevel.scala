@@ -7,6 +7,8 @@ import shapeless.ops.hlist._
 import shapeless.nat._
 import shapeless.ops.nat._
 
+/** Provides access to the real integers of the compared indexes.
+  * This is used to build the esper query. */
 class Compare[N1 <: Nat, N2 <: Nat](v1: ToInt[N1], v2: ToInt[N2]) {
   def getValue1 = v1()
   def getValue2 = v2()
@@ -15,13 +17,13 @@ class Compare[N1 <: Nat, N2 <: Nat](v1: ToInt[N1], v2: ToInt[N2]) {
 /** Class encapsulating all simple join operations (join ... on ...) */
 class RichNat[N1 <: Nat](n1: N1) {
 
-  /** test for equality */
+  /** Infix representation of the equality check. */
   def =:=[N2 <: Nat](n2: N2)(implicit v1: ToInt[N1], v2: ToInt[N2]) = {
     new Compare[N1, N2](v1, v2)
   }
 }
 
-/** Helper object for the equality compare function */
+/** Helper object for the equality compare function. */
 object Compare {
   implicit def natToRNat[N1 <: Nat](n: N1) = new RichNat[N1](n)
 }
@@ -29,11 +31,11 @@ object Compare {
 object HListOps {
 
   /**
-   * removes an element with a specific index from an HList. _0 for the first index (zero indexed)
+   * Removes an element with a specific index from an HList. _0 for the first index (zero indexed).
    */
   trait RemoveIndex[L <: HList, N <: Nat] { type Out <: HList }
 
-  /** companion object for the RemoveIndex trait */
+  /** Companion object for the RemoveIndex trait. */
   object RemoveIndex {
     type Aux[L <: HList, N <: Nat, Out0 <: HList] = RemoveIndex[L, N] { type Out = Out0 }
 
@@ -45,11 +47,11 @@ object HListOps {
       }
   }
   /**
-   * joins to hlists on two specific indeces (zero indexed).
+   * Joins to HLists on two specific indeces (zero indexed).
    */
   trait Join[N1 <: Nat, N2 <: Nat, L1 <: HList, L2 <: HList]
 
-  /** companion object for the Join trait */
+  /** Companion object for the Join trait. */
   object Join {
     type Aux[N1 <: Nat, N2 <: Nat, L1 <: HList, L2 <: HList, Out0 <: HList] = Join[N1, N2, L1, L2] { type Out = Out0 }
 
@@ -63,7 +65,7 @@ object HListOps {
   }
 }
 
-/** Implicit converter from tuples to HLists, as HLists are needet for the actual join */
+/** Implicit converter from tuples to HLists, as HLists are needed for the actual join. */
 object TupleOps {
   @implicitNotFound(msg = "Either ${N1} or ${N2} are out of bounds or have incompatible types.")
   trait Join[N1 <: Nat, N2 <: Nat, TUP1 <: Product, TUP2 <: Product] { type Out }
@@ -110,7 +112,7 @@ object BoolASTObs{
 
   /**
    * Implicit to be able to use AST1 &&& AST2 instead of And(Ast1, AST2).
-   * Not currently working.
+   * Currently not working.
    */
   implicit class BoolASTOp[T <: Product, U <: Product](ast1 : BoolAST[T,U]){
     def &&&(ast2 : BoolAST[T,U]) : BoolAST[T,U] = And[T,U](ast1,ast2)

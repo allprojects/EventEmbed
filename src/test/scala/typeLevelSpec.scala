@@ -1,5 +1,3 @@
-
-
 import shapeless._
 import nat._
 import shapeless.test.illTyped
