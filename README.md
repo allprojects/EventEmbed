@@ -4,28 +4,33 @@ EventEmbed Shapeless Join
 This modified CEScala library allows for type safe joins of event streams.
 
 ## Motivation
-
 It is common in Scala to write strongly typed programs that allow to identify a lot of errors
 during compilation instead of runtime. In this library we provide a strongly typed interface
-for event joins. 
+for event joins. Although CEScala has compile time support for bounds checking and allows only
+values of equal types to be compared, it does not produce redundance-free result events for
+joins.
 
-A typical event join can look like this:
+Consider the following simple join (simplified code):
 
-```scala
+```
 event1 = Event[(Int, Int)]
 event2 = Event[(Int, String)]
-event1 join event2 on (event1.0 == event2.0)
+event3 = event1 join event2 on (event1._0 == event2._0)
 ```
 
-This looks fine on the first glance, but if we would change the type of `event2`:
+In CEScala the type of `event3` is `Event[(Int, Int, Int, String)]` (the event of the concatenated
+tuples). As the join selected only those events in which the first parts of the tuples are equal,
+the first and third part of the result event are the same. Thus the resulting event in CEScala
+contains redundant information. Our join library will take advantage of the join semantics and
+produce and event of type `Event[(Int, Int, String)]`, i.e. it will drop the redundant third part.
+Redundance-free result events help to improve performance and to create more meaningful event types.
 
-```scala
-event2 = Event[(String, Int)]
-```
+However, sometimes it is not clear which (if any) information are redundant (e.g. comparison of numbers with
+<). For this case the library provides a join that is separated in a selection function (that does
+the comparison) and a projection function (that removes "redundant" information).
 
-This is a case where a strongly typed interface is important. It catches, that
-the join compares two fields with an incompatible type (namely `Int` and `String`).
-Our library yields a type error for this example.
+All in all, this library provides a type-safe and on demand fine-grained  interface to specify
+redundance-free result events.
 
 ## Dependencies
 New dependencies of this library are Shapeless.
