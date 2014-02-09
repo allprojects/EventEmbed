@@ -33,7 +33,8 @@ All in all, this library provides a type-safe and on demand fine-grained  interf
 redundance-free result events.
 
 ## Dependencies
-New dependencies of this library are Shapeless.
+This library depends on `esper` and `shapeless`. Running the tests requires `scalatest`. A detailed
+list of the dependencies can be found in the [sbt build file.](build.sbt).
 
 ## Usage
 The following dependencies are needed in code that wants to use theses modified join operations:
