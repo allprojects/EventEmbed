@@ -34,7 +34,7 @@ redundance-free result events.
 
 ## Dependencies
 This library depends on `esper` and `shapeless`. Running the tests requires `scalatest`. A detailed
-list of the dependencies can be found in the [sbt build file.](build.sbt).
+list of the dependencies can be found in the [sbt build file](build.sbt).
 
 ## Usage
 The following dependencies are needed in code that wants to use theses modified join operations:
