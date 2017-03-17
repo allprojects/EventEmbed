@@ -12,11 +12,11 @@ class TypeLevelSpec {
   class HListOpsSpec {
     import shapelessJoin.HListOps._
 
-    type l1 = ::[Int, ::[Int, ::[String, HNil]]]
-    type l2 = ::[Int, ::[String, HNil]]
-    type l3 = ::[Int, ::[Int, HNil]]
-    type l4 = ::[Int, ::[Int, ::[String, ::[Int, ::[String, HNil]]]]]
-    type l5 = ::[Int, ::[Int, ::[String, ::[Int, HNil]]]]
+    type l1 = Int :: Int :: String :: HNil
+    type l2 = Int :: String :: HNil
+    type l3 = Int :: Int :: HNil
+    type l4 = Int :: Int :: String :: Int :: String :: HNil
+    type l5 = Int :: Int :: String :: Int :: HNil
 
     implicitly[RemoveIndex.Aux[l1, _0, l2]]
     implicitly[RemoveIndex.Aux[l1, _1, l2]]
